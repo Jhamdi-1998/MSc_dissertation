@@ -1,25 +1,22 @@
 """
-config.py:
-Here are all the fixed parameters used with our data.
-No other script should be used, it sould be imported from here.
-"""
-"""
+config.py: Here are all the fixed parameters used with our data..
+
+--
 Pairs:
-Each pair is (Stock A, Stock B) as they'll appear in the Engle-Granger
-regression: log P_A,t = alpha + beta * log P_B,t + eps_t
-Order follows the Section 5.3.1 of the paper.
+Just to avoid getting confused: the order of the stock in the pairs will be kept in the same order
+as the written methodology (OLS for example)
 """
 
 PAIRS = [
-    ("KO", "PEP"),     # Coca-Cola / PepsiCo - Beverages
-    ("F", "GM"),       # Ford / General Motors - Automobile
-    ("UAL", "DAL"),    # United Airlines / Delta Air Lines - Airlines
-    ("JPM", "BAC"),    # JPMorgan Chase / Bank of America - Banking
-    ("MSFT", "ORCL"),  # Microsoft / Oracle - Technology
-    ("ADP", "FI"),     # Automatic Data Processing / Fiserv - Data
+    ("KO", "PEP"),
+    ("F", "GM"),
+    ("UAL", "DAL"),
+    ("JPM", "BAC"),
+    ("MSFT", "ORCL"),
+    ("ADP", "FISV"),
 ]
 
-# Sector labels for the company description table (Section 7.1.1)
+# Sector labels
 SECTOR_MAP = {
     "KO": "Beverages",
     "PEP": "Beverages",
@@ -32,10 +29,10 @@ SECTOR_MAP = {
     "MSFT": "Technology",
     "ORCL": "Technology",
     "ADP": "Data",
-    "FI": "Data",
+    "FISV": "Data",
 }
 
-# Full company names for the description table
+# Company OFFICIAL names
 COMPANY_NAMES = {
     "KO": "The Coca-Cola Company",
     "PEP": "PepsiCo, Inc.",
@@ -48,7 +45,7 @@ COMPANY_NAMES = {
     "MSFT": "Microsoft Corporation",
     "ORCL": "Oracle Corporation",
     "ADP": "Automatic Data Processing, Inc.",
-    "FI": "Fiserv, Inc.",
+    "FISV": "Fiserv, Inc.",
 }
 
 # Building a list of the tickers, from "PAIRS"
