@@ -46,11 +46,12 @@ def adf_precondition_test(series: pd.Series) -> dict:
     }
 
 def run_precondition_tests(log_prices: pd.DataFrame) -> pd.DataFrame:
-    rows = {}
+    rows = []
     for ticker in config.ALL_TICKERS:
-        rows[ticker] = adf_precondition_test(log_prices[ticker])
-    table = pd.DataFrame(rows).T
-    table.index.name = "Ticker"
+        result = adf_precondition_test(log_prices[ticker])
+        result["Ticker"] = ticker
+        rows.append(result)
+    table = pd.DataFrame(rows).set_index("Ticker")
     return table
 
 """
@@ -83,7 +84,7 @@ def engle_granger_step2(log_prices: pd.DataFrame, stock_a: str, stock_b: str) ->
 Running the full Engle-Granger tests for all the pairs
 """
 def run_cointegration_tests(log_prices: pd.DataFrame):
-    summary_rows = {}
+    summary_rows = []
     spreads = {}
 
     for stock_a, stock_b in config.PAIRS:
@@ -92,20 +93,20 @@ def run_cointegration_tests(log_prices: pd.DataFrame):
         alpha_hat, beta_hat, residuals = engle_granger_step1(log_prices, stock_a, stock_b)
         step2 = engle_granger_step2(log_prices, stock_a, stock_b)
 
-        summary_rows[pair_label] = {
+        summary_rows.append({
+            "Pair": pair_label,
             "Stock A": stock_a,
             "Stock B": stock_b,
             "alpha_hat": alpha_hat,
             "beta_hat": beta_hat,
             **step2,
-        }
+        })
 
-        # Spread X_t = log P_A - beta_hat * log P_B, same object as eps_hat_t
+        # Spread X_t = log P_A - beta_hat * log P_B
         spread = log_prices[stock_a] - beta_hat * log_prices[stock_b]
         spreads[pair_label] = spread
 
-    summary_table = pd.DataFrame(summary_rows).T
-    summary_table.index.name = "Pair"
+    summary_table = pd.DataFrame(summary_rows).set_index("Pair")
     return summary_table, spreads
 
 """

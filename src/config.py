@@ -8,44 +8,44 @@ as the written methodology (OLS for example)
 """
 
 PAIRS = [
-    ("KO", "PEP"),
-    ("F", "GM"),
-    ("UAL", "DAL"),
+    ("DTE", "AEP"),
+    ("KIM", "O"),
+    ("T", "VZ"),
+    ("UNH", "CVS"),
+    ("HD", "LOW"),
     ("JPM", "BAC"),
-    ("MSFT", "ORCL"),
-    ("ADP", "FISV"),
 ]
 
 # Sector labels
 SECTOR_MAP = {
-    "KO": "Beverages",
-    "PEP": "Beverages",
-    "F": "Automobile",
-    "GM": "Automobile",
-    "UAL": "Airlines",
-    "DAL": "Airlines",
+    "DTE": "Utilities",
+    "AEP": "Utilities",
+    "KIM": "Real Estate",
+    "O": "Real Estate",
+    "T": "Communication Services",
+    "VZ": "Communication Services",
+    "UNH": "Healthcare",
+    "CVS": "Healthcare",
+    "HD": "Non-essential goods",
+    "LOW": "Non-essential goods",
     "JPM": "Banking",
     "BAC": "Banking",
-    "MSFT": "Technology",
-    "ORCL": "Technology",
-    "ADP": "Data",
-    "FISV": "Data",
 }
 
 # Company OFFICIAL names
 COMPANY_NAMES = {
-    "KO": "The Coca-Cola Company",
-    "PEP": "PepsiCo, Inc.",
-    "F": "Ford Motor Company",
-    "GM": "General Motors Company",
-    "UAL": "United Airlines Holdings, Inc.",
-    "DAL": "Delta Air Lines, Inc.",
+"DTE": "DTE Energy Company",
+    "AEP": "American Electric Power Company, Inc.",
+    "KIM": "Kimco Realty Corporation",
+    "O": "Realty Income Corporation",
+    "T": "AT&T Inc.",
+    "VZ": "Verizon Communications Inc.",
+    "UNH": "UnitedHealth Group Incorporated",
+    "CVS": "CVS Health Corporation",
+    "HD": "The Home Depot, Inc.",
+    "LOW": "Lowe's Companies, Inc.",
     "JPM": "JPMorgan Chase & Co.",
     "BAC": "Bank of America Corporation",
-    "MSFT": "Microsoft Corporation",
-    "ORCL": "Oracle Corporation",
-    "ADP": "Automatic Data Processing, Inc.",
-    "FISV": "Fiserv, Inc.",
 }
 
 # Building a list of the tickers, from "PAIRS"
