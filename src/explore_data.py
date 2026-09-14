@@ -1,7 +1,5 @@
 """
-explore_data.py: In this part we will generate:
-  1. A descriptive statistics table (N, Mean, Std Dev, Min, Max) per ticker, over the formation period.
-  2. A chart showing each pair's price movements
+explore_data.py: In this part we will generate: A descriptive statistics table (N, Mean, Std Dev, Min, Max) per ticker, over the formation period.
 """
 
 import os
@@ -62,7 +60,7 @@ def main():
     print(stats)
     stats_path = os.path.join(config.TABLES_DIR, "descriptive_stats.csv")
     stats.to_csv(stats_path)
-    print(f"\nSaved price-level descriptive stats table -> {stats_path}")
+    print(f"\nSaved descriptive stats table -> {stats_path}")
     log_price_path = os.path.join(config.PROCESSED_DATA_DIR, "log_prices_full.csv")
     log_prices = pd.read_csv(log_price_path, index_col="Date", parse_dates=True)
     log_returns = compute_log_returns(log_prices)

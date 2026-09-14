@@ -16,9 +16,6 @@ K_ENTRY=2.0
 STOP_LOSS_PCT=0.07   
 COMMITTED_CAPITAL=100.0 
 
-"""
-Loading formation-period spread from cointegration.py.
-"""
 def load_formation_spread_stats() -> dict:
     path = os.path.join(config.PROCESSED_DATA_DIR, "spreads_formation.csv")
     spreads = pd.read_csv(path, index_col="Date", parse_dates=True)
@@ -30,35 +27,19 @@ def load_formation_spread_stats() -> dict:
         }
     return stats
 
-
-"""
-Loading beta_hat per pair
-"""
 def load_beta_hats() -> dict:
     path = os.path.join(config.TABLES_DIR, "engle_granger_results.csv")
     eg_results = pd.read_csv(path, index_col="Pair")
     return eg_results["beta_hat"].to_dict()
 
-
-"""
-Loading trading-period log prices
-"""
 def load_trading_log_prices() -> pd.DataFrame:
     path = os.path.join(config.PROCESSED_DATA_DIR, "log_prices_trading.csv")
     df = pd.read_csv(path, index_col="Date", parse_dates=True)
     return df
 
-
-"""
-Building the spread X_t
-"""
 def build_trading_spread(log_prices: pd.DataFrame, stock_a: str, stock_b: str, beta_hat: float) -> pd.Series:
     return log_prices[stock_a] - beta_hat * log_prices[stock_b]
 
-
-"""
-Running the trading simulation for 1 pair
-"""
 def simulate_pair_trading(pair_label: str, spread: pd.Series, mu_hat_s: float, sigma_hat_s: float) -> tuple:
     z_scores = (spread - mu_hat_s) / sigma_hat_s
 

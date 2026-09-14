@@ -87,7 +87,7 @@ def load_raw_adj_close() -> pd.DataFrame:
     return panel
 
 """
-Check for no forward-fillinhg.
+Check for no forward-fillinhg
 """
 def align_panel(panel: pd.DataFrame) -> pd.DataFrame:
     before = len(panel)
@@ -138,7 +138,7 @@ def build_processed_dataset():
 def main():
     failures = pull_all_tickers()
     if failures:
-        print(f"\nAborting Stage 2 - fix failed ticker(s) first: {failures}")
+        print(f"\nneed to reerun to fix tickers: {failures}")
         return
 
     build_processed_dataset()

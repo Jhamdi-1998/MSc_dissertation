@@ -1,8 +1,5 @@
 """
 allocation.py: Capital Allocation Methods
-
---
-Four allocation scenarios, all producing portfolio weights w_i that feed into the portfolio return R_p,t
 """
 
 import os
@@ -32,7 +29,7 @@ def load_ou_results() -> pd.DataFrame:
 
 
 """
-Equal-Weight allocation (EW)
+Equal-Weight allocation
 """
 def compute_ew_weights(pair_labels: list) -> pd.Series:
     n = len(pair_labels)
@@ -40,7 +37,7 @@ def compute_ew_weights(pair_labels: list) -> pd.Series:
 
 
 """
-Mean-Variance allocation (MVA)
+Mean-Variance allocation
 """
 def compute_mva_weights(daily_returns: pd.DataFrame) -> pd.Series:
     R = daily_returns.mean()                 
@@ -54,7 +51,7 @@ def compute_mva_weights(daily_returns: pd.DataFrame) -> pd.Series:
 
 
 """
-6.2.3 Mean Reversion Budgeting allocation (MRB)
+Mean Reversion Budgeting allocation
 """
 def compute_mrb_weights(ou_results: pd.DataFrame) -> pd.Series:
     theta_r = ou_results["theta_r"]
@@ -68,7 +65,7 @@ def compute_mrb_weights(ou_results: pd.DataFrame) -> pd.Series:
 
 
 """
-Mean Reversion Ranking allocation (MRR)
+Mean Reversion Ranking allocation
 """
 def compute_mrr_weights(ou_results: pd.DataFrame) -> pd.Series:
     theta_r = ou_results["theta_r"]
@@ -86,7 +83,7 @@ def compute_mrr_weights(ou_results: pd.DataFrame) -> pd.Series:
 
 
 """
-Computing portfolio-level daily return
+Computing returns of the portfolio 
 """
 def compute_portfolio_returns(daily_returns: pd.DataFrame, weights: pd.Series) -> pd.Series:
     return (daily_returns * weights).sum(axis=1)
@@ -101,7 +98,7 @@ def compute_correlation_matrix(daily_returns: pd.DataFrame) -> pd.DataFrame:
 Basic performance summary for a portfolio return series
 """
 def summarize_performance(portfolio_returns: pd.Series) -> dict:
-    total_return = (1 + portfolio_returns).prod() - 1
+    total_return = float((1 + portfolio_returns).prod() - 1)
     annualized_vol = portfolio_returns.std() * np.sqrt(252)
     sharpe = (portfolio_returns.mean() / portfolio_returns.std()) * np.sqrt(252) if portfolio_returns.std() > 0 else np.nan
     max_drawdown = ((1 + portfolio_returns).cumprod() / (1 + portfolio_returns).cumprod().cummax() - 1).min()
@@ -116,14 +113,9 @@ def summarize_performance(portfolio_returns: pd.Series) -> dict:
 
 def main():
     os.makedirs(config.TABLES_DIR, exist_ok=True)
-
-    print("Loading daily excess returns and OU estimation results...")
     daily_returns = load_daily_excess_returns()
     ou_results = load_ou_results()
     pair_labels = daily_returns.columns.tolist()
-
-    print("\nComputing allocation weights for all four scenarios...\n")
-
     ew_weights = compute_ew_weights(pair_labels)
     mva_weights = compute_mva_weights(daily_returns)
     mrb_weights = compute_mrb_weights(ou_results)
@@ -135,14 +127,13 @@ def main():
         "MRB": mrb_weights,
         "MRR": mrr_weights,
     })
-    print("=== ALLOCATION WEIGHTS ===")
+    print("ALLOCATION WEIGHTS")
     print(weights_table)
 
     weights_path = os.path.join(config.TABLES_DIR, "allocation_weights.csv")
     weights_table.to_csv(weights_path)
     print(f"\nSaved -> {weights_path}")
 
-    print("\nComputing correlation matrix of daily excess returns...")
     correlation_matrix = compute_correlation_matrix(daily_returns)
     print(correlation_matrix)
 
@@ -150,7 +141,6 @@ def main():
     correlation_matrix.to_csv(correlation_path)
     print(f"Saved -> {correlation_path}")
 
-    print("\nComputing portfolio-level performance for each scenario...\n")
     performance_rows = {}
     for scenario_name in ["EW", "MVA", "MRB", "MRR"]:
         weights = weights_table[scenario_name]

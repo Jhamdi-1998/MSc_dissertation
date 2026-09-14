@@ -12,19 +12,15 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import config
 
-DT = 1.0 / 252.0  # daily time step, annualized convention (Leung & Li, 2015)
+DT = 1.0 / 252.0 
 
-
-"""
-Loading the formation-period spread series (already built by cointegration.py).
-"""
 def load_formation_spreads() -> pd.DataFrame:
     path = os.path.join(config.PROCESSED_DATA_DIR, "spreads_formation.csv")
     return pd.read_csv(path, index_col="Date", parse_dates=True)
 
 def compute_summary_stats(spread: pd.Series) -> dict:
-    x = spread.values[:-1]   # x_{k-1}, k = 1..n
-    y = spread.values[1:]    # x_k
+    x = spread.values[:-1] 
+    y = spread.values[1:]    
     n = len(x)
 
     return {
@@ -36,10 +32,6 @@ def compute_summary_stats(spread: pd.Series) -> dict:
         "Xyy": (y ** 2).sum(),
     }
 
-
-"""
-OU estimation for a single pair's spread
-"""
 def estimate_ou_parameters(spread: pd.Series) -> dict:
     stats = compute_summary_stats(spread)
     n = stats["n"]
@@ -65,10 +57,6 @@ def estimate_ou_parameters(spread: pd.Series) -> dict:
         "l_star": l_star,
     }
 
-
-"""
-Running OU-MLE for all pairs, then computing the normalized quantities needed for MRB.
-"""
 def run_ou_estimation(spreads: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for pair_label in spreads.columns:

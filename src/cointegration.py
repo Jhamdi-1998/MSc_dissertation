@@ -77,11 +77,11 @@ def engle_granger_step2(log_prices: pd.DataFrame, stock_a: str, stock_b: str) ->
         "1%": crit_values[0],
         "5%": crit_values[1],
         "10%": crit_values[2],
-        "Rejects H0 (cointegrated, as desired)": pvalue < 0.05,
+        "Rejects H0 (cointegrated)": pvalue < 0.05,
     }
 
 """
-Running the full Engle-Granger tests for all the pairs
+Running Engle-Granger tests for all the pairs
 """
 def run_cointegration_tests(log_prices: pd.DataFrame):
     summary_rows = []
@@ -115,7 +115,7 @@ def main():
     print("Loading log prices")
     log_prices = load_formation_log_prices()
 
-    print("\nStage 1: ADF precondition test on log-prices")
+    print("\nStage 1: ADF test on log-prices")
     precondition_table=run_precondition_tests(log_prices)
     print(precondition_table)
     precondition_path=os.path.join(config.TABLES_DIR, "adf_precondition_test.csv")
@@ -123,7 +123,7 @@ def main():
     print(f"\nSaved -> {precondition_path}")
 
     n_fail_as_expected=precondition_table["Fails to Reject H0"].sum()
-    print(f"\n{n_fail_as_expected}/{len(config.ALL_TICKERS)} tickers show the expected "
+    print(f"\n{n_fail_as_expected}/{len(config.ALL_TICKERS)} tickers show the expected value"
           f"unit-root behaviour (fail to reject H0 at 5%).")
 
     print("\nStage 2 & 3: Engle-Granger cointegration test on all pairs")
