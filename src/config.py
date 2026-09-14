@@ -1,10 +1,5 @@
 """
-config.py: Here are all the fixed parameters used with our data..
-
---
-Pairs:
-Just to avoid getting confused: the order of the stock in the pairs will be kept in the same order
-as the written methodology (OLS for example)
+config.py: setting the pair names, periods and file paths
 """
 
 PAIRS = [
@@ -31,8 +26,7 @@ SECTOR_MAP = {
     "JPM": "Banking",
     "BAC": "Banking",
 }
-
-# Company OFFICIAL names
+# Company names
 COMPANY_NAMES = {
 "DTE": "DTE Energy Company",
     "AEP": "American Electric Power Company, Inc.",
@@ -47,18 +41,14 @@ COMPANY_NAMES = {
     "JPM": "JPMorgan Chase & Co.",
     "BAC": "Bank of America Corporation",
 }
-
-# Building a list of the tickers, from "PAIRS"
+# all tickers togetther
 ALL_TICKERS = sorted({ticker for pair in PAIRS for ticker in pair})
 
 # Formation and trading periods
 FORMATION_START = "2021-01-01"
 FORMATION_END = "2021-12-31"
-
 TRADING_START = "2022-01-01"
 TRADING_END = "2022-12-31"
-
-# To extract data we need to pull the full period (formation + trading)
 PULL_START = FORMATION_START
 PULL_END = TRADING_END
 

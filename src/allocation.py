@@ -54,10 +54,7 @@ def compute_mva_weights(daily_returns: pd.DataFrame) -> pd.Series:
 
 
 """
-6.2.3 Mean Reversion Budgeting (MRB). Eq. 23-26.
-theta_tilde_i: min-max normalized theta_r_i (Eq. 25).
-l_tilde_i: already min-max normalized in ou_estimation.py (Eq. 23).
-w_i = theta_tilde_i * l_tilde_i / sum_j(theta_tilde_j * l_tilde_j)
+6.2.3 Mean Reversion Budgeting allocation (MRB)
 """
 def compute_mrb_weights(ou_results: pd.DataFrame) -> pd.Series:
     theta_r = ou_results["theta_r"]
@@ -71,9 +68,7 @@ def compute_mrb_weights(ou_results: pd.DataFrame) -> pd.Series:
 
 
 """
-6.2.4 Mean Reversion Ranking (MRR). Eq. 27.
-Rank pairs by theta_tilde_i * l_tilde_i (ascending: lowest score = rank 1).
-Weight for rank k (k=1..N): (N-1 + 2*(k-1)) / (2*N*(N-1))
+Mean Reversion Ranking allocation (MRR)
 """
 def compute_mrr_weights(ou_results: pd.DataFrame) -> pd.Series:
     theta_r = ou_results["theta_r"]
@@ -91,14 +86,19 @@ def compute_mrr_weights(ou_results: pd.DataFrame) -> pd.Series:
 
 
 """
-Computing portfolio-level daily return R_p,t = sum_i w_i * R_i,t (Eq. 10).
+Computing portfolio-level daily return
 """
 def compute_portfolio_returns(daily_returns: pd.DataFrame, weights: pd.Series) -> pd.Series:
     return (daily_returns * weights).sum(axis=1)
 
+"""
+Computing the correlation matrix for MVA
+"""
+def compute_correlation_matrix(daily_returns: pd.DataFrame) -> pd.DataFrame:
+    return daily_returns.corr()
 
 """
-Basic performance summary for a portfolio return series.
+Basic performance summary for a portfolio return series
 """
 def summarize_performance(portfolio_returns: pd.Series) -> dict:
     total_return = (1 + portfolio_returns).prod() - 1
@@ -141,6 +141,14 @@ def main():
     weights_path = os.path.join(config.TABLES_DIR, "allocation_weights.csv")
     weights_table.to_csv(weights_path)
     print(f"\nSaved -> {weights_path}")
+
+    print("\nComputing correlation matrix of daily excess returns...")
+    correlation_matrix = compute_correlation_matrix(daily_returns)
+    print(correlation_matrix)
+
+    correlation_path = os.path.join(config.TABLES_DIR, "excess_return_correlation.csv")
+    correlation_matrix.to_csv(correlation_path)
+    print(f"Saved -> {correlation_path}")
 
     print("\nComputing portfolio-level performance for each scenario...\n")
     performance_rows = {}

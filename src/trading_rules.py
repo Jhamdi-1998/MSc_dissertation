@@ -1,30 +1,5 @@
 """
-trading_rules.py: Section 5.4 - Trading Rules
-
---
-Z-score: Zt = (Xt - mu_hat_s) / sigma_hat_s, using the FORMATION-period
-         sample mean/std of the spread (mu_hat_s, sigma_hat_s), applied
-         to the trading-period spread (GGR, 2006).
-
-Entry:   |Zt| > k = 2 (GGR, 2006; Krauss, 2017). Long the spread
-         (buy 1 unit of A, short beta_hat units of B) when Zt < -k.
-         Short the spread when Zt > +k.
-
-Exit:    position closes when Zt reverts to 0 (GGR, 2006).
-
-Stop-loss: 7% realised loss on committed capital, checked against
-           cumulative P&L since entry (Caldeira & Moura, 2013).
-
-Forced closure: any position still open at the end of the trading
-                period is closed (GGR, 2006).
-
-Committed capital convention: since the position Xt = log P_A,t - beta_hat * log P_B,t
-is built in log-price space, we use a fixed notional C_i per pair
-(C_i = 100), with daily position value change approximated as
-Delta V_i,t = C_i * Delta X_t * position_sign. This matches GGR (2006)'s
-committed capital convention (fixed notional per pair regardless of each
-stock's raw share price), which keeps excess returns comparable in scale
-across all six pairs for the allocation methods in Section 6.
+trading_rules.py
 """
 
 import os
@@ -37,14 +12,12 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import config
 
-K_ENTRY = 2.0          # entry threshold, in standard deviations (GGR, 2006; Krauss, 2017)
-STOP_LOSS_PCT = 0.07   # 7% of committed capital (Caldeira & Moura, 2013)
-COMMITTED_CAPITAL = 100.0  # fixed notional per pair (C_i), GGR (2006) convention
-
+K_ENTRY=2.0          
+STOP_LOSS_PCT=0.07   
+COMMITTED_CAPITAL=100.0 
 
 """
-Loading formation-period spread stats (mu_hat_s, sigma_hat_s) per pair,
-from the spreads already saved by cointegration.py.
+Loading formation-period spread from cointegration.py.
 """
 def load_formation_spread_stats() -> dict:
     path = os.path.join(config.PROCESSED_DATA_DIR, "spreads_formation.csv")
@@ -59,7 +32,7 @@ def load_formation_spread_stats() -> dict:
 
 
 """
-Loading beta_hat per pair from the Engle-Granger results table.
+Loading beta_hat per pair
 """
 def load_beta_hats() -> dict:
     path = os.path.join(config.TABLES_DIR, "engle_granger_results.csv")
@@ -68,7 +41,7 @@ def load_beta_hats() -> dict:
 
 
 """
-Loading trading-period log prices.
+Loading trading-period log prices
 """
 def load_trading_log_prices() -> pd.DataFrame:
     path = os.path.join(config.PROCESSED_DATA_DIR, "log_prices_trading.csv")
@@ -77,17 +50,14 @@ def load_trading_log_prices() -> pd.DataFrame:
 
 
 """
-Building the trading-period spread X_t, using the beta_hat FIXED at
-formation (not re-estimated on trading data).
+Building the spread X_t
 """
 def build_trading_spread(log_prices: pd.DataFrame, stock_a: str, stock_b: str, beta_hat: float) -> pd.Series:
     return log_prices[stock_a] - beta_hat * log_prices[stock_b]
 
 
 """
-Running the trading simulation for a single pair over the trading period.
-Returns a trade log (list of dicts) and a daily excess-return series
-r_i,t (per Section 5.2, Eq. 2: Delta V_i,t / C_i on days the pair is open, else 0).
+Running the trading simulation for 1 pair
 """
 def simulate_pair_trading(pair_label: str, spread: pd.Series, mu_hat_s: float, sigma_hat_s: float) -> tuple:
     z_scores = (spread - mu_hat_s) / sigma_hat_s
@@ -95,11 +65,11 @@ def simulate_pair_trading(pair_label: str, spread: pd.Series, mu_hat_s: float, s
     trade_log = []
     daily_returns = pd.Series(0.0, index=spread.index)
 
-    position_open = False
-    position_sign = 0       # +1 = long the spread, -1 = short the spread
-    entry_date = None
-    entry_spread_value = None
-    cumulative_pnl = 0.0
+    position_open=False
+    position_sign=0
+    entry_date=None
+    entry_spread_value=None
+    cumulative_pnl=0.0
 
     dates = spread.index
 
@@ -107,42 +77,37 @@ def simulate_pair_trading(pair_label: str, spread: pd.Series, mu_hat_s: float, s
         z_t = z_scores.loc[date]
 
         if not position_open:
-            # Check entry condition
             if z_t < -K_ENTRY:
-                position_open = True
-                position_sign = 1  # long the spread
-                entry_date = date
-                entry_spread_value = spread.loc[date]
-                cumulative_pnl = 0.0
+                position_open=True
+                position_sign=1
+                entry_date=date
+                entry_spread_value=spread.loc[date]
+                cumulative_pnl=0.0
             elif z_t > K_ENTRY:
-                position_open = True
-                position_sign = -1  # short the spread
-                entry_date = date
-                entry_spread_value = spread.loc[date]
-                cumulative_pnl = 0.0
+                position_open=True
+                position_sign=-1
+                entry_date=date
+                entry_spread_value=spread.loc[date]
+                cumulative_pnl=0.0
 
         else:
-            # Position is open - compute today's P&L contribution
             if i > 0:
-                prev_date = dates[i - 1]
-                delta_x = spread.loc[date] - spread.loc[prev_date]
-                delta_v = COMMITTED_CAPITAL * delta_x * position_sign
-                daily_returns.loc[date] = delta_v / COMMITTED_CAPITAL  # r_i,t = Delta V_i,t / C_i
+                prev_date=dates[i - 1]
+                delta_x=spread.loc[date]-spread.loc[prev_date]
+                delta_v=COMMITTED_CAPITAL * delta_x *position_sign
+                daily_returns.loc[date]=delta_v / COMMITTED_CAPITAL
                 cumulative_pnl += delta_v
 
-            exit_reason = None
+            exit_reason=None
 
-            # Exit condition 1: reversion to zero
             if (position_sign == 1 and z_t >= 0) or (position_sign == -1 and z_t <= 0):
                 exit_reason = "reversion"
 
-            # Exit condition 2: stop-loss (7% of committed capital)
             elif cumulative_pnl <= -STOP_LOSS_PCT * COMMITTED_CAPITAL:
-                exit_reason = "stop_loss"
+                exit_reason= "stop_loss"
 
-            # Exit condition 3: forced closure at end of trading period
             elif date == dates[-1]:
-                exit_reason = "forced_closure"
+                exit_reason= "forced_closure"
 
             if exit_reason is not None:
                 trade_log.append({
@@ -156,58 +121,25 @@ def simulate_pair_trading(pair_label: str, spread: pd.Series, mu_hat_s: float, s
                     "Return on Committed Capital": round(cumulative_pnl / COMMITTED_CAPITAL, 4),
                     "Exit Reason": exit_reason,
                 })
-                position_open = False
-                position_sign = 0
-                entry_date = None
-                entry_spread_value = None
-                cumulative_pnl = 0.0
+                position_open=False
+                position_sign=0
+                entry_date=None
+                entry_spread_value=None
+                cumulative_pnl=0.0
 
     return trade_log, daily_returns
-
-
-"""
-Plotting z-score with entry/exit markers for a pair.
-"""
-def plot_zscore_trades(pair_label: str, spread: pd.Series, mu_hat_s: float, sigma_hat_s: float, trade_log: list):
-    z_scores = (spread - mu_hat_s) / sigma_hat_s
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(z_scores.index, z_scores.values, label="Z-score", linewidth=1)
-    ax.axhline(K_ENTRY, color="red", linestyle="--", linewidth=1, label=f"+/- k = {K_ENTRY}")
-    ax.axhline(-K_ENTRY, color="red", linestyle="--", linewidth=1)
-    ax.axhline(0, color="black", linestyle="-", linewidth=0.8)
-
-    pair_trades = [t for t in trade_log if t["Pair"] == pair_label]
-    for trade in pair_trades:
-        entry_z = z_scores.loc[trade["Entry Date"]]
-        exit_z = z_scores.loc[trade["Exit Date"]]
-        color = "green" if trade["P&L ($)"] >= 0 else "red"
-        ax.scatter(trade["Entry Date"], entry_z, color="blue", marker="^", zorder=5)
-        ax.scatter(trade["Exit Date"], exit_z, color=color, marker="v", zorder=5)
-
-    ax.set_title(f"{pair_label.replace('_', '-')} Z-score with Trade Entries/Exits (Trading Period)")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Z-score")
-    ax.legend()
-    fig.tight_layout()
-
-    out_path = os.path.join(config.FIGURES_DIR, f"{pair_label}_zscore_trades.png")
-    fig.savefig(out_path, dpi=150)
-    plt.close(fig)
-    print(f"  saved {out_path}")
-
 
 def main():
     os.makedirs(config.TABLES_DIR, exist_ok=True)
     os.makedirs(config.FIGURES_DIR, exist_ok=True)
 
-    print("Loading formation-period spread stats (mu_hat_s, sigma_hat_s)...")
+    print("Loading spred stats.")
     formation_stats = load_formation_spread_stats()
 
-    print("Loading beta_hat per pair...")
+    print("Loading beta hat")
     beta_hats = load_beta_hats()
 
-    print("Loading trading-period log prices...")
+    print("Loading log prices")
     trading_log_prices = load_trading_log_prices()
 
     all_trade_logs = []
@@ -233,21 +165,16 @@ def main():
         all_trade_logs.extend(trade_log)
         all_daily_returns[pair_label] = daily_returns
 
-        plot_zscore_trades(pair_label, trading_spread, mu_hat_s, sigma_hat_s, trade_log)
-
-    # Save trade log
     trade_log_df = pd.DataFrame(all_trade_logs)
     trade_log_path = os.path.join(config.TABLES_DIR, "trade_log.csv")
     trade_log_df.to_csv(trade_log_path, index=False)
     print(f"\nSaved trade log -> {trade_log_path}")
 
-    # Save daily excess-return series (r_i,t)
     daily_returns_df = pd.DataFrame(all_daily_returns)
     daily_returns_path = os.path.join(config.PROCESSED_DATA_DIR, "daily_excess_returns.csv")
     daily_returns_df.to_csv(daily_returns_path)
     print(f"Saved daily excess returns -> {daily_returns_path}")
 
-    # Summary
     print("\n=== SUMMARY ===")
     summary_rows = []
     for stock_a, stock_b in config.PAIRS:

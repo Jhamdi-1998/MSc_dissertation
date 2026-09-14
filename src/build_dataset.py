@@ -2,7 +2,7 @@
 build_dataset.py: here we extract, clean and then get the logs of our adj closing prices.
 
 --
-Stage 1: Here we extract the adj closing prices over the formation + trading window and save them into CSVs.
+Stage 1: extract adj closing prices to csv
 """
 
 import os
@@ -17,9 +17,6 @@ import yfinance as yf
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import config
 
-"""
-    Downloading adjusted close prices for a single ticker.
-"""
 def fetch_ticker(ticker: str, start: str, end: str, max_retries: int = 3) -> pd.DataFrame:
     last_error = None
     for attempt in range(1, max_retries + 1):
@@ -75,11 +72,7 @@ def pull_all_tickers():
     return failures
 
 """
-Stage 2: processing the extracted data and getting the log adj closing prices
-
---
-We start off by combining all the extracted data from the CSV to have one database with the asj cloding prices
-from all the tickers
+Stage 2: getting the log of the adj closing prices
 """
 
 def load_raw_adj_close() -> pd.DataFrame:
@@ -94,7 +87,7 @@ def load_raw_adj_close() -> pd.DataFrame:
     return panel
 
 """
-As per our methodology, we make sure that there is no forward-filling in our data.
+Check for no forward-fillinhg.
 """
 def align_panel(panel: pd.DataFrame) -> pd.DataFrame:
     before = len(panel)
